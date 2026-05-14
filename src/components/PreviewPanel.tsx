@@ -32,8 +32,8 @@ export function PreviewPanel({ projectId, runtimeError, onDismiss, onFix }: Prev
     setIsDeploying(true);
 
     try {
-      const response = await api.deploy(projectId);
-      setPreviewUrl(response.previewUrl);
+      const response :any = await api.deploy(projectId);
+      setPreviewUrl(response.data.previewUrl);
       toast({
         title: "Deployment successful",
         description: "Your preview is now ready",

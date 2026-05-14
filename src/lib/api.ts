@@ -100,12 +100,12 @@ const toChatEventType = (value?: string): ChatEventType => {
 };
 
 // Convert flat file paths to nested tree structure
-function buildFileTree(paths: { path: string }[]): FileNode[] {
+function buildFileTree(paths: any): FileNode[] {
   const root: FileNode[] = [];
   const nodeMap = new Map<string, FileNode>();
 
   // Sort paths to ensure directories come before their children
-  const sortedPaths = [...paths].sort((a, b) => a.path.localeCompare(b.path));
+  const sortedPaths = [...paths.files].sort((a, b) => a.path.localeCompare(b.path));
 
   for (const { path } of sortedPaths) {
     const parts = path.split("/");
@@ -219,17 +219,26 @@ export const api = {
       throw new Error(error);
     }
 
-    const payload: ApiResponse<FileContentResponse> = await response.json();
+    const payload: any = await response.text();
 
-    if (!payload.success || !payload.data) {
-      throw new Error(payload.error || "Failed to fetch file content");
-    }
+    // if (!payload.success || !payload.data) {
+    //   throw new Error(payload.error || "Failed to fetch file content");
+    // }
 
-    return payload.data.content;
+    return payload;
   },
 
   async deploy(projectId: string): Promise<DeployResponse> {
-    throw new Error("Preview deployment endpoint is not available in the current backend API.");
+    const response = await fetch(`${BASE_URL}/workspace/projects/${projectId}/deploy`, {
+      method: "POST",
+      headers: { ...getAuthHeaders() },
+    });
+
+    if (!response.ok) {
+      throw new Error("Deployment failed");
+    }
+
+    return response.json();
   },
 
   async getProjects(): Promise<ProjectSummaryResponse[]> {
