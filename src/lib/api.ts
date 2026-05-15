@@ -260,17 +260,25 @@ export const api = {
   },
 
   async createProject(name: string): Promise<ProjectResponse> {
-    const response :any= await fetch(`${BASE_URL}/workspace/projects`, {
+    const response = await fetch(`${BASE_URL}/workspace/projects`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({ name }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to create project");
+      const error = await parseErrorText(response, "Failed to create project");
+      throw new Error(error || "Failed to create project");
     }
 
-    return response.json().data;
+    const payload: ApiResponse<ProjectResponse> = await response.json();
+    console.log("Create project response:", payload);
+
+    if (!payload.success || !payload.data) {
+      throw new Error(payload.error || "Failed to create project");
+    }
+
+    return payload.data;
   },
 
   async getProject(id: string): Promise<ProjectResponse> {
